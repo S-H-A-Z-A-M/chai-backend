@@ -3,3 +3,6 @@ if installed as a dev dependency they dont get pushed in to the production hence
 here we have installed nodemon as a dev dependency
 
 command for it 'npm install --save-dev nodemon'
+
+
+Always add a try catch block while connecting to the database or use promises, database is Always in another continent hence it takes time to connect so use asyn and await
