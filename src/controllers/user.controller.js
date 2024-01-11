@@ -15,18 +15,19 @@ const registerUser = asyncHandler(async (req, res) => {
   // check for user creation
   // return the response
 
-  const { fullName, email, username, passwords } = req.body;
+  console.log(req.body);
+  const { fullName, email, username, password } = req.body;
   console.log(fullName);
 
   if (
-    [fullName, email, username, passwords].some((field) => {
+    [fullName, email, username, password].some((field) => {
       return field?.trim() === "";
     })
   ) {
     throw new ApiError(400, "All fields must be provided");
   }
 
-  const existedUser = User.findOne({
+  const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
 
@@ -34,8 +35,19 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "User already exists");
   }
 
+  console.log(req.files);
+
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  //   const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+  let coverImageLocalPath;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
+  }
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar Image is required");
@@ -59,15 +71,13 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
-  )
+  );
 
-  if(createdUser){
-    throw new ApiError(500, "Something went wrong creating a user");
+  if (createdUser) {
+    return res
+      .status(201)
+      .json(new ApiResponse(200, createdUser, "User created successfully"));
   }
-
-  return res.status(201).json(
-    new ApiResponse(200, createdUser, "User created successfully")
-  )
 });
 
 export { registerUser };
