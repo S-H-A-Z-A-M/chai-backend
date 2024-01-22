@@ -334,6 +334,10 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Error while uploading avatar");
   }
 
+  const oldCoverImageOfUser = await User.findById(req.user?._id).select(
+    "coverImage"
+  );
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -343,6 +347,8 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     },
     { new: true }
   ).select("-password");
+
+  const deletedResponse = DeleteCloudinaryAsset(oldCoverImageOfUser);
 
   return res
     .status(200)
